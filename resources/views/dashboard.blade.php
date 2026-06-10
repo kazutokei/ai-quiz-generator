@@ -103,7 +103,7 @@
                 </style>
 
                 <!-- Upload Form State -->
-                <form id="uploadForm" action="{{ route('quiz.generate') }}" method="POST" enctype="multipart/form-data" onsubmit="startUpload()">
+                <form id="uploadForm" action="{{ route('quiz.generate') }}" method="POST" enctype="multipart/form-data" onsubmit="return startUpload()">
                     @csrf
                     <div id="dropZone" class="border-2 border-dashed border-border-subtle rounded-2xl p-12 text-center cursor-pointer transition-colors hover:border-brand-1 hover:bg-brand-1/5 relative">
                         <input type="file" id="pdfInput" name="pdf" accept=".pdf" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" required>
@@ -167,9 +167,13 @@
 
     function startUpload() {
         isUploading = true;
-        document.getElementById('uploadForm').classList.add('hidden');
-        document.getElementById('uploadingState').classList.remove('hidden');
-        document.getElementById('uploadCloseBtn').classList.add('opacity-50', 'cursor-not-allowed');
+        // Use setTimeout so the browser sends the form request BEFORE we swap the UI
+        setTimeout(() => {
+            document.getElementById('uploadForm').classList.add('hidden');
+            document.getElementById('uploadingState').classList.remove('hidden');
+            document.getElementById('uploadCloseBtn').classList.add('opacity-50', 'cursor-not-allowed');
+        }, 50);
+        return true; // Allow form submission to proceed
     }
 
     function openDeleteModal(url) {

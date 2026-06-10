@@ -40,7 +40,7 @@ class QuizService
         $response = Http::withToken(config('services.groq.key'))
             ->timeout(60)
             ->post(self::API_URL, [
-                'model'    => config('services.groq.model', self::MODEL),
+                'model'    => self::MODEL,
                 'messages' => [
                     [
                         'role'    => 'user',
@@ -49,6 +49,45 @@ class QuizService
                 ],
                 'temperature' => 0.7,
             ]);
+
+        if ($response->failed()) {
+            $err = $response->json();
+            $code = $err['error']['code'] ?? '';
+            $message = $err['error']['message'] ?? '';
+            
+            // If the model is decommissioned, try active models
+            if ($code === 'model_decommissioned' || str_contains(strtolower($message), 'decommissioned')) {
+                // Try llama-3.3-70b-versatile first
+                $response = Http::withToken(config('services.groq.key'))
+                    ->timeout(60)
+                    ->post(self::API_URL, [
+                        'model'    => 'llama-3.3-70b-versatile',
+                        'messages' => [
+                            [
+                                'role'    => 'user',
+                                'content' => $prompt,
+                            ],
+                        ],
+                        'temperature' => 0.7,
+                    ]);
+
+                // If that also fails, fall back to llama-3.1-8b-instant
+                if ($response->failed()) {
+                    $response = Http::withToken(config('services.groq.key'))
+                        ->timeout(60)
+                        ->post(self::API_URL, [
+                            'model'    => 'llama-3.1-8b-instant',
+                            'messages' => [
+                                [
+                                    'role'    => 'user',
+                                    'content' => $prompt,
+                                ],
+                            ],
+                            'temperature' => 0.7,
+                        ]);
+                }
+            }
+        }
 
         if ($response->failed()) {
             throw new \Exception('Groq API request failed: ' . $response->body());

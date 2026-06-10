@@ -19,6 +19,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Ensure the pdfs upload directory exists
+        $pdfsDir = storage_path('app/pdfs');
+        if (! is_dir($pdfsDir)) {
+            mkdir($pdfsDir, 0755, true);
+        }
     }
 }

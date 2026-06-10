@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" id="html-root">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,17 +12,31 @@
     
     <!-- Tailwind CSS v4 CDN -->
     <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+
     <!-- Toastify CSS CDN -->
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <style type="text/tailwindcss">
         @theme {
             --font-sans: 'Inter', sans-serif;
+            --color-brand-1: #4f46e5;
+            --color-brand-2: #818cf8;
+            --color-bg-base: #f8fafc;
+            --color-bg-surface: #ffffff;
+            --color-bg-card: #ffffff;
+            --color-text-main: #0f172a;
+            --color-text-muted: #64748b;
+            --color-border-subtle: #e2e8f0;
+        }
+
+        html.dark {
+            --color-brand-1: #6c63ff;
+            --color-brand-2: #a78bfa;
             --color-bg-base: #0d0f1a;
             --color-bg-surface: #141622;
             --color-bg-card: #1b1e30;
+            --color-text-main: #f1f5f9;
+            --color-text-muted: #94a3b8;
             --color-border-subtle: #252840;
-            --color-brand-1: #6c63ff;
-            --color-brand-2: #a78bfa;
         }
 
         .spinner {
@@ -35,14 +49,22 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+
         /* Custom Toastify adjustments */
         .toastify {
-            background: #1b1e30 !important;
-            color: #f1f5f9 !important;
-            border: 1px solid #252840 !important;
+            background: var(--color-bg-card) !important;
+            color: var(--color-text-main) !important;
+            border: 1px solid var(--color-border-subtle) !important;
             border-radius: 14px !important;
             padding: 14px 20px !important;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 10px 10px -5px rgba(0, 0, 0, 0.4) !important;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
             font-family: 'Inter', sans-serif !important;
             font-size: 14px !important;
             display: flex !important;
@@ -54,32 +76,83 @@
         @yield('custom_styles')
     </style>
 </head>
-<body class="bg-bg-base text-slate-200 min-h-screen font-sans selection:bg-brand-2/30">
+<body class="bg-bg-base text-text-main min-h-screen font-sans selection:bg-brand-2/30 transition-colors duration-300">
 
     <!-- NAVBAR -->
-    <nav class="flex items-center @yield('nav_class', 'justify-between py-4 px-8') bg-bg-surface/85 backdrop-blur-md border-b border-border-subtle sticky top-0 z-50">
-        <a href="{{ route('dashboard') }}" class="text-xl font-bold bg-gradient-to-br from-brand-1 to-brand-2 text-transparent bg-clip-text tracking-tight hover:opacity-80 transition-opacity">
-            Quiz<span class="font-light">AI</span>
+    <nav class="flex items-center @yield('nav_class', 'justify-between py-4 px-8') bg-bg-surface border-b border-border-subtle sticky top-0 z-50">
+        <a href="{{ route('dashboard') }}" class="flex items-center gap-2 group hover:opacity-80 transition-opacity">
+            <div class="text-brand-1 group-hover:text-brand-2 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/>
+                    <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/>
+                </svg>
+            </div>
+            <span class="text-xl font-bold text-brand-1 tracking-tight">QuizR</span>
         </a>
-        @hasSection('nav_extra')
-            @yield('nav_extra')
-        @else
-            <span class="text-xs text-slate-500">Powered by Groq · Llama 3</span>
-        @endif
+        
+        <div class="flex items-center gap-4">
+            <button onclick="toggleTheme()" class="p-2 rounded-full hover:bg-border-subtle/50 text-text-muted hover:text-text-main transition-colors">
+                <!-- Sun Icon -->
+                <svg id="theme-icon-sun" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                <!-- Moon Icon -->
+                <svg id="theme-icon-moon" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+            </button>
+
+            @hasSection('nav_extra')
+                @yield('nav_extra')
+            @else
+                <span class="text-sm font-medium text-text-muted">QuizR Generator</span>
+                <div class="w-8 h-8 rounded-full bg-border-subtle flex items-center justify-center text-text-muted border border-border-subtle/50">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                    </svg>
+                </div>
+            @endif
+        </div>
     </nav>
 
     <main>
         @yield('content')
     </main>
 
-    <footer class="text-center py-6 border-t border-border-subtle text-slate-500 text-xs">
-        &copy; {{ date('Y') }} QuizAI — AI Quiz Generator
+    <footer class="text-center py-6 border-t border-border-subtle text-text-muted text-xs flex flex-col gap-1">
+        <div>&copy; {{ date('Y') }} QuizR</div>
+        <div class="italic opacity-80">"Fueling curiosity, instantly."</div>
     </footer>
 
     <!-- Toastify JS CDN -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
     <script>
+        // Theme initialization
+        const htmlRoot = document.getElementById('html-root');
+        const sunIcon = document.getElementById('theme-icon-sun');
+        const moonIcon = document.getElementById('theme-icon-moon');
+        
+        let currentTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        applyTheme(currentTheme);
+
+        function toggleTheme() {
+            currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('theme', currentTheme);
+            applyTheme(currentTheme);
+        }
+
+        function applyTheme(theme) {
+            if (theme === 'dark') {
+                htmlRoot.classList.add('dark');
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
+            } else {
+                htmlRoot.classList.remove('dark');
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
+            }
+        }
         function showNotification(message, type = 'success') {
             let icon = '';
             let borderStyle = '';

@@ -53,8 +53,6 @@ class QuizController extends Controller
         }
 
         if (empty(trim($text))) {
-            Storage::disk('local')->delete($path);
-
             return back()->withErrors([
                 'pdf' => 'Could not extract text from this PDF. It may be empty or image-based.',
             ]);
@@ -64,8 +62,6 @@ class QuizController extends Controller
         try {
             $questionsData = $this->quizService->generateQuiz($text);
         } catch (\Throwable $e) {
-            Storage::disk('local')->delete($path);
-
             return back()->withErrors([
                 'pdf' => 'AI generation failed: ' . $e->getMessage(),
             ]);

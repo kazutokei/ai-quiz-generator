@@ -1,63 +1,40 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Quiz: {{ $quiz->title }} — Test your knowledge with AI-generated multiple choice questions.">
-    <title>{{ $quiz->title }} — QuizAI</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+@extends('layouts.app')
+
+@section('title', $quiz->title . ' — QuizAI')
+@section('meta_description', 'Quiz: ' . $quiz->title . ' — Test your knowledge with AI-generated multiple choice questions.')
+
+@section('custom_styles')
+    .question-card.state-correct {
+        @apply border-emerald-500/40;
+    }
+    .question-card.state-wrong {
+        @apply border-red-500/40;
+    }
     
-    <!-- Tailwind CSS v4 CDN -->
-    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
-    <style type="text/tailwindcss">
-        @theme {
-            --font-sans: 'Inter', sans-serif;
-            --color-bg-base: #0d0f1a;
-            --color-bg-surface: #141622;
-            --color-bg-card: #1b1e30;
-            --color-border-subtle: #252840;
-            --color-brand-1: #6c63ff;
-            --color-brand-2: #a78bfa;
-        }
+    .choice-btn.selected-correct {
+        @apply bg-emerald-500/10 border-emerald-500/50 text-emerald-400;
+    }
+    .choice-btn.selected-correct .choice-letter {
+        @apply bg-emerald-500/20 text-emerald-300;
+    }
+    
+    .choice-btn.selected-wrong {
+        @apply bg-red-500/10 border-red-500/50 text-red-400;
+    }
+    .choice-btn.selected-wrong .choice-letter {
+        @apply bg-red-500/20 text-red-300;
+    }
+    
+    .choice-btn.reveal-correct {
+        @apply bg-emerald-500/5 border-emerald-500/30 text-emerald-400;
+    }
+    .choice-btn.reveal-correct .choice-letter {
+        @apply bg-emerald-500/20 text-emerald-300;
+    }
+@endsection
 
-        .question-card.state-correct {
-            @apply border-emerald-500/40;
-        }
-        .question-card.state-wrong {
-            @apply border-red-500/40;
-        }
-        
-        .choice-btn.selected-correct {
-            @apply bg-emerald-500/10 border-emerald-500/50 text-emerald-400;
-        }
-        .choice-btn.selected-correct .choice-letter {
-            @apply bg-emerald-500/20 text-emerald-300;
-        }
-        
-        .choice-btn.selected-wrong {
-            @apply bg-red-500/10 border-red-500/50 text-red-400;
-        }
-        .choice-btn.selected-wrong .choice-letter {
-            @apply bg-red-500/20 text-red-300;
-        }
-        
-        .choice-btn.reveal-correct {
-            @apply bg-emerald-500/5 border-emerald-500/30 text-emerald-400;
-        }
-        .choice-btn.reveal-correct .choice-letter {
-            @apply bg-emerald-500/20 text-emerald-300;
-        }
-    </style>
-</head>
-<body class="bg-bg-base text-slate-200 min-h-screen font-sans selection:bg-brand-2/30">
-
-<!-- NAVBAR -->
-<nav class="flex items-center gap-4 py-4 px-8 bg-bg-surface/85 backdrop-blur-md border-b border-border-subtle sticky top-0 z-50">
-    <a href="{{ route('dashboard') }}" class="text-xl font-bold bg-gradient-to-br from-brand-1 to-brand-2 text-transparent bg-clip-text tracking-tight hover:opacity-80 transition-opacity">
-        Quiz<span class="font-light">AI</span>
-    </a>
+@section('nav_class', 'gap-4 py-4 px-8')
+@section('nav_extra')
     <span class="text-border-subtle">/</span>
     <span class="text-sm text-slate-500 font-medium truncate max-w-[200px] sm:max-w-xs">{{ $quiz->title }}</span>
     
@@ -65,8 +42,9 @@
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
         <span class="hidden sm:inline">Back to Dashboard</span>
     </a>
-</nav>
+@endsection
 
+@section('content')
 <!-- HEADER -->
 <div class="max-w-4xl mx-auto mt-10 px-6">
     <h1 class="text-2xl md:text-3xl font-extrabold bg-gradient-to-br from-white to-brand-2 text-transparent bg-clip-text mb-3">
@@ -155,11 +133,9 @@
         </button>
     </form>
 </div>
+@endsection
 
-<footer class="text-center py-6 border-t border-border-subtle text-slate-500 text-xs">
-    &copy; {{ date('Y') }} QuizAI — AI Quiz Generator
-</footer>
-
+@section('scripts')
 <script>
     let correctCount = 0;
     const total = {{ $questions->count() }};
@@ -204,6 +180,4 @@
         document.getElementById('scoreBar').style.width = pct + '%';
     }
 </script>
-
-</body>
-</html>
+@endsection

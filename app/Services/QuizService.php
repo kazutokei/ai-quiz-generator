@@ -13,7 +13,7 @@ class QuizService
     private const API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
     /**
-     * The Groq model to use.
+     * The Groq model to use — read from config to allow env-level override.
      */
     private const MODEL = 'llama3-70b-8192';
 
@@ -40,7 +40,7 @@ class QuizService
         $response = Http::withToken(config('services.groq.key'))
             ->timeout(60)
             ->post(self::API_URL, [
-                'model'    => self::MODEL,
+                'model'    => config('services.groq.model', self::MODEL),
                 'messages' => [
                     [
                         'role'    => 'user',
@@ -142,6 +142,7 @@ PROMPT;
             throw new \Exception('AI did not generate enough questions. Please try again.');
         }
 
-        return $questions;
+        // Slice to exactly 15 questions to match UI and prompt constraints
+        return array_slice($questions, 0, 15);
     }
 }

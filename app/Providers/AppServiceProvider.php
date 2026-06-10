@@ -22,9 +22,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Define rate limiter to protect the AI API (5 requests per hour per IP)
+        // Define rate limiter to protect the AI API (configurable via env)
         RateLimiter::for('generate-quiz', function (Request $request) {
-            return Limit::perHour(5)->by($request->ip());
+            $limit = config('services.groq.rate_limit_per_hour', 60);
+            return $limit > 0
+                ? Limit::perHour($limit)->by($request->ip())
+                : Limit::none();
         });
 
         // Ensure the pdfs upload directory exists

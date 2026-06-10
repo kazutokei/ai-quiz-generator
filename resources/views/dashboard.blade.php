@@ -16,32 +16,14 @@
 
 <!-- UPLOAD CARD -->
 <div class="max-w-2xl mx-auto mb-14 px-6">
-    <div class="bg-bg-card border border-border-subtle rounded-2xl p-8 shadow-xl shadow-black/50">
+    <div class="bg-bg-card border border-border-subtle rounded-2xl p-6 sm:p-8 shadow-xl shadow-black/50">
         <h2 class="text-base font-semibold mb-5 text-white">Upload your PDF</h2>
-
-        @if ($errors->any())
-            <div class="flex items-start gap-3 p-3.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                <div>
-                    @foreach ($errors->all() as $error)
-                        <div>{{ $error }}</div>
-                    @endforeach
-                </div>
-            </div>
-        @endif
-
-        @if (session('success'))
-            <div class="flex items-center gap-3 p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                {{ session('success') }}
-            </div>
-        @endif
 
         <form id="uploadForm" action="{{ route('quiz.generate') }}" method="POST" enctype="multipart/form-data">
             @csrf
             
             <div id="dropZone" class="group relative border-2 border-dashed border-border-subtle rounded-xl p-10 text-center cursor-pointer transition-colors duration-200 hover:border-brand-1 hover:bg-brand-1/5">
-                <input type="file" id="pdfInput" name="pdf" accept=".pdf" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                <input type="file" id="pdfInput" name="pdf" accept=".pdf" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
                 
                 <div class="w-12 h-12 bg-brand-1/15 rounded-xl flex items-center justify-center mx-auto mb-4 text-brand-2 group-hover:scale-110 transition-transform">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
@@ -77,8 +59,8 @@
     @else
         <div class="grid gap-4">
             @foreach ($quizzes as $quiz)
-                <div class="bg-bg-card border border-border-subtle rounded-xl p-5 flex items-center justify-between gap-4 transition-all duration-200 hover:border-brand-1/40 hover:-translate-y-0.5 group">
-                    <div class="min-w-0 flex-1">
+                <div class="bg-bg-card border border-border-subtle rounded-xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all duration-200 hover:border-brand-1/40 hover:-translate-y-0.5 group">
+                    <div class="min-w-0 w-full sm:flex-1">
                         <div class="font-semibold text-slate-200 truncate mb-1 group-hover:text-brand-2 transition-colors">{{ $quiz->title }}</div>
                         <div class="flex items-center gap-3 text-xs text-slate-500">
                             <span class="flex items-center gap-1">
@@ -91,14 +73,14 @@
                             </span>
                         </div>
                     </div>
-                    <div class="flex gap-2 shrink-0">
-                        <a href="{{ route('quiz.show', $quiz) }}" class="px-3.5 py-2 bg-brand-1/15 text-brand-2 hover:bg-brand-1/25 rounded-lg text-sm font-semibold transition-colors">
+                    <div class="flex gap-2 shrink-0 w-full sm:w-auto justify-end">
+                        <a href="{{ route('quiz.show', $quiz) }}" class="px-3.5 py-2 bg-brand-1/15 text-brand-2 hover:bg-brand-1/25 rounded-lg text-sm font-semibold transition-colors text-center flex-1 sm:flex-none">
                             View
                         </a>
-                        <form action="{{ route('quiz.destroy', $quiz) }}" method="POST" onsubmit="return confirm('Delete this quiz?')">
+                        <form action="{{ route('quiz.destroy', $quiz) }}" method="POST" onsubmit="return confirm('Delete this quiz?')" class="flex-1 sm:flex-none">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="px-3.5 py-2 bg-red-500/10 text-red-400 hover:bg-red-500/20 rounded-lg text-sm font-semibold transition-colors">
+                            <button type="submit" class="w-full px-3.5 py-2 bg-red-500/10 text-red-400 hover:bg-red-500/20 rounded-lg text-sm font-semibold transition-colors">
                                 Delete
                             </button>
                         </form>
@@ -122,7 +104,14 @@
 
     pdfInput.addEventListener('change', () => {
         if (pdfInput.files[0]) {
-            fileName.textContent = '✓ ' + pdfInput.files[0].name;
+            const file = pdfInput.files[0];
+            // Validate file type
+            if (!file.name.toLowerCase().endsWith('.pdf') && file.type !== 'application/pdf') {
+                showNotification('Only PDF files are allowed.', 'error');
+                pdfInput.value = '';
+                return;
+            }
+            fileName.textContent = '✓ ' + file.name;
             dropZone.classList.add('border-brand-1', 'bg-brand-1/5');
         }
     });
@@ -135,7 +124,7 @@
     });
     ['dragleave', 'drop'].forEach(evt => {
         dropZone.addEventListener(evt, () => {
-            if(!pdfInput.files.length) {
+            if (!pdfInput.files.length) {
                 dropZone.classList.remove('border-brand-1', 'bg-brand-1/5');
             }
         });
@@ -143,18 +132,28 @@
     dropZone.addEventListener('drop', e => {
         e.preventDefault();
         const file = e.dataTransfer.files[0];
-        if (file && file.type === 'application/pdf') {
+        if (file && (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf'))) {
             const dt = new DataTransfer();
             dt.items.add(file);
             pdfInput.files = dt.files;
             fileName.textContent = '✓ ' + file.name;
+            dropZone.classList.add('border-brand-1', 'bg-brand-1/5');
+        } else {
+            showNotification('Only PDF files are allowed.', 'error');
         }
     });
 
-    form.addEventListener('submit', () => {
+    form.addEventListener('submit', e => {
+        // JS validation — prevents silent browser block from hidden required input
+        if (!pdfInput.files || pdfInput.files.length === 0) {
+            e.preventDefault();
+            showNotification('Please select a PDF file first.', 'error');
+            return;
+        }
+        // Show loading state
         submitBtn.disabled = true;
         spinner.style.display = 'block';
-        btnText.textContent = 'Generating…';
+        btnText.textContent = 'Generating… this may take 30s';
     });
 </script>
 @endsection
